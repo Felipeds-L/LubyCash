@@ -14,6 +14,7 @@ export default class UserStatuses extends BaseSchema {
         .integer('status_id')
         .unsigned()
         .references('statuses.id')
+        .defaultTo(2)
       table.timestamp('created_at', { useTz: true })
       table.timestamp('updated_at', { useTz: true })
     })

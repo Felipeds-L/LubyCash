@@ -14,7 +14,7 @@ export default class Users extends BaseSchema {
       table.string('city').notNullable()
       table.string('state').notNullable()
       table.string('zipcode').notNullable()
-      table.string('salary_average').notNullable()
+      table.string('average_salary').notNullable()
       table.timestamp('created_at', { useTz: true })
       table.timestamp('updated_at', { useTz: true })
     })
