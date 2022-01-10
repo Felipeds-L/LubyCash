@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParse = require('body-parser')
 const controllers = require('./controllers')
+const User_Status = require('./models/User_Status')
 const server = express()
 
 
@@ -21,8 +22,14 @@ async function run(){
   await consumer.subscribe({ topic: 'test-topic', fromBeginning: true })
   await consumer.run({
     eachMessage: async ({ message }) => {
-      
-      console.log(message.value.toString())
+      const new_user = message.value.toString()
+      const new_userJSON = JSON.parse(new_user)
+      const { salary, user_id } = new_userJSON.user
+      if(salary >= 500){
+       console.log(`User ${user_id}, your salary ${salary} is higher than 500, so you'll be aproved on our bank!`)
+      }else{
+        console.log(`User ${user_id}, your salary ${salary} is lower than 500, 'cause that, unfortunantly we can't aprove you`)
+      }
     },
   })
 }

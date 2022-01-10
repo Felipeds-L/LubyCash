@@ -18,10 +18,10 @@ export default class UsersController {
       );
       try{
         await User.create(data)
-
+        const user = await User.findByOrFail('email', data.email)
         const producer = kafka.producer()
         const message = {
-          user: { name: data.full_name, email: data.email, phone: data.phone, cpf: data.cpf_number, salary: data.average_salary}
+          user: { username: user.full_name, user_id: user.id, salary: user.average_salary}
         }
         await producer.connect()
         await producer.send({
