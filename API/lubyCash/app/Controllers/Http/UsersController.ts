@@ -12,20 +12,34 @@ export default class UsersController {
   public async index({}: HttpContextContract) {}
 
   public async store({ request, response }: HttpContextContract) {
+    const producer = kafka.producer()
+    await producer.connect()
+
     try{
       const data = await request.only(
         ['full_name', 'email', 'phone', 'cpf_number', 'address', 'city', 'state', 'zipcode', 'average_salary']
       );
       try{
-        await User.create(data)
+        await User.create({
+          email: data.email
+        })
         const user = await User.findByOrFail('email', data.email)
-        const producer = kafka.producer()
         const message = {
-          user: { username: user.full_name, user_id: user.id, salary: user.average_salary}
+          user: {
+            user_id: user.id,
+            username: data.full_name,
+            phone: data.phone,
+            cpf: data.cpf_number,
+            address: data.address,
+            city: data.city,
+            state: data.state,
+            zipcode: data.zipcode,
+            salary: data.average_salary,
+          }
         }
-        await producer.connect()
+
         await producer.send({
-          topic: 'test-topic',
+          topic: 'create-user',
           messages: [
             { value: JSON.stringify(message) },
           ],
