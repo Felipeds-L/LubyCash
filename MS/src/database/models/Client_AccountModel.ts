@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { DataTypes } from "sequelize/dist";
+import { DataTypes } from "sequelize";
 import { db } from "../db";
 
 export const Client_AccountModel = db.define('client_account', {

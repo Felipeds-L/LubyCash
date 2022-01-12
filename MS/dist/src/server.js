@@ -7,6 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /* eslint-disable camelcase */
 const express_1 = __importDefault(require("express"));
 const ClienteModel_1 = require("./database/models/ClienteModel");
+const Client_AccountModel_1 = require("./database/models/Client_AccountModel");
 const { Kafka } = require('kafkajs');
 const app = (0, express_1.default)();
 app.listen(3000, () => {
@@ -33,6 +34,16 @@ app.listen(3000, () => {
                     state: state,
                     zipcode: zipcode,
                     average_salary: average_salary
+                });
+                const client = await ClienteModel_1.ClientModel.findOne({
+                    where: {
+                        'email': email
+                    }
+                });
+                const clientJSON = client === null || client === void 0 ? void 0 : client.toJSON();
+                await Client_AccountModel_1.Client_AccountModel.create({
+                    client_id: clientJSON.id,
+                    current_balance: 200
                 });
             },
         });

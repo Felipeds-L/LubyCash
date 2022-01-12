@@ -2,6 +2,7 @@
 /* eslint-disable camelcase */
 import express from 'express';
 import { ClientModel } from './database/models/ClienteModel';
+import { Client_AccountModel } from './database/models/Client_AccountModel';
 const { Kafka } = require('kafkajs');
 const app = express();
 
@@ -35,7 +36,16 @@ app.listen(3000, () => {
           zipcode: zipcode,
           average_salary: average_salary
         })
-        
+        const client = await ClientModel.findOne({
+          where:{
+            'email': email
+          }
+        })
+        const clientJSON = client?.toJSON()
+        await Client_AccountModel.create({
+          client_id: clientJSON.id,
+          current_balance: 200
+        })
       },
     })
   }
