@@ -1,4 +1,4 @@
-import { DataTypes } from "sequelize/dist";
+import { DataTypes } from "sequelize";
 import { db } from "../db";
 
 export const ClientModel = db.define('clients', {
