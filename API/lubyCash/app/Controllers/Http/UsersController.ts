@@ -1,5 +1,6 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import User from 'App/Models/User'
+import UserStatus from 'App/Models/UserStatus'
 
 const { Kafka } = require('kafkajs')
 
@@ -24,7 +25,7 @@ export default class UsersController {
         await User.create({
           email: data.email
         })
-        // const user = await User.findByOrFail('email', data.email)
+        const user = await User.findByOrFail('email', data.email)
         const message = {
           user: {
             full_name: data.full_name,
@@ -38,15 +39,29 @@ export default class UsersController {
             average_salary: data.average_salary,
           }
         }
+        if(data.average_salary > 500){
+          await UserStatus.create({
+            user_id: user.id,
+            status_id: 1
+          })
 
-        await producer.send({
-          topic: 'create-user',
-          messages: [
-            { value: JSON.stringify(message) },
-          ],
-        })
+          await producer.send({
+            topic: 'create-user',
+            messages: [
+              { value: JSON.stringify(message) },
+            ],
+          })
 
-        await producer.disconnect()
+          await producer.disconnect()
+        }else{
+          await UserStatus.create({
+            user_id: user.id,
+            status_id: 2
+          })
+        }
+
+
+
         return response.status(200).json({Created: true})
       }catch{
         return response.status(400).json({Message: 'Error on create the user, please try it again later!'})

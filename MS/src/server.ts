@@ -24,22 +24,18 @@ app.listen(3000, () => {
         const user = message.value.toString()
         const userJSON = JSON.parse(user)
         const { full_name, email, phone, cpf_number, address, city, state, zipcode, average_salary} = userJSON.user
-        if(average_salary >= 500){
-          console.log(`User ${full_name}, you receive more than R$ 500, than we create a account to you!`)
-          await ClientModel.create({
-            full_name: full_name,
-            email: email,
-            phone: phone,
-            cpf_number: cpf_number,
-            address: address,
-            city: city,
-            state: state,
-            zipcode: zipcode,
-            average_salary: average_salary
-          })
-        }else{
-          console.log(`User ${full_name}, you receive less than R$ 500, than we create a account to you!`)
-        }
+        await ClientModel.create({
+          full_name: full_name,
+          email: email,
+          phone: phone,
+          cpf_number: cpf_number,
+          address: address,
+          city: city,
+          state: state,
+          zipcode: zipcode,
+          average_salary: average_salary
+        })
+        
       },
     })
   }
