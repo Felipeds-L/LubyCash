@@ -5,14 +5,15 @@ const { Kafka } = require('kafkajs')
 
 const kafka = new Kafka({
   clientId: 'my-app',
-  brokers: ['localhost:9092', 'kafka:9092']
+  brokers: ['localhost:9092', 'kafka:29092']
 })
+const producer = kafka.producer()
+
 
 export default class UsersController {
   public async index({}: HttpContextContract) {}
 
   public async store({ request, response }: HttpContextContract) {
-    const producer = kafka.producer()
     await producer.connect()
 
     try{
@@ -23,18 +24,18 @@ export default class UsersController {
         await User.create({
           email: data.email
         })
-        const user = await User.findByOrFail('email', data.email)
+        // const user = await User.findByOrFail('email', data.email)
         const message = {
           user: {
-            user_id: user.id,
-            username: data.full_name,
+            full_name: data.full_name,
+            email: data.email,
             phone: data.phone,
-            cpf: data.cpf_number,
+            cpf_number: data.cpf_number,
             address: data.address,
             city: data.city,
             state: data.state,
             zipcode: data.zipcode,
-            salary: data.average_salary,
+            average_salary: data.average_salary,
           }
         }
 
