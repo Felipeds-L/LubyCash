@@ -1,6 +1,7 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import User from 'App/Models/User'
 import UserStatus from 'App/Models/UserStatus'
+import UserLevelAccess from 'App/Models/UserLevelAccess'
 
 const { Kafka } = require('kafkajs')
 
@@ -19,7 +20,7 @@ export default class UsersController {
 
     try{
       const data = await request.only(
-        ['full_name', 'email', 'phone', 'cpf_number', 'address', 'city', 'state', 'zipcode', 'average_salary']
+        ['full_name', 'email', 'phone', 'cpf_number', 'address', 'city', 'state', 'zipcode', 'average_salary', 'level_access']
       );
       try{
         await User.create({
@@ -45,8 +46,13 @@ export default class UsersController {
             status_id: 1
           })
 
+          await UserLevelAccess.create({
+            level_id: data.level_access,
+            user_id: user.id
+          })
+
           await producer.send({
-            topic: 'create-user',
+            topic: 'user',
             messages: [
               { value: JSON.stringify(message) },
             ],

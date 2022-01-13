@@ -6,20 +6,17 @@ import { Client_AccountModel } from './database/models/Client_AccountModel';
 const { Kafka } = require('kafkajs');
 const app = express();
 
-
-
-
 app.listen(3000, () => {
   const kafka = new Kafka({
     clientId: 'my-app',
     brokers: ['localhost:9092', 'kafka:29092']
   })
-  const consumer = kafka.consumer({ groupId: 'test-group' })
+  const consumer = kafka.consumer({ groupId: 'user-group', fromBeginning: false })
   
   async function run(){
     
     await consumer.connect()
-    await consumer.subscribe({ topic: 'create-user'})
+    await consumer.subscribe({ topic: 'user'})
     await consumer.run({
       eachMessage: async ({ message }: any) => {
         const user = message.value.toString()
@@ -36,16 +33,16 @@ app.listen(3000, () => {
           zipcode: zipcode,
           average_salary: average_salary
         })
-        const client = await ClientModel.findOne({
-          where:{
-            'email': email
-          }
-        })
-        const clientJSON = client?.toJSON()
-        await Client_AccountModel.create({
-          client_id: clientJSON.id,
-          current_balance: 200
-        })
+        // const client = await ClientModel.findOne({
+        //   where:{
+        //     'email': email
+        //   }
+        // })
+        // const clientJSON = client?.toJSON()
+        // await Client_AccountModel.create({
+        //   client_id: clientJSON.id,
+        //   current_balance: 200
+        // })
       },
     })
   }
