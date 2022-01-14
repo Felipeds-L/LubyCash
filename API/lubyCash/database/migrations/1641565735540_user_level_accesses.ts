@@ -10,10 +10,12 @@ export default class UserLevelAccesses extends BaseSchema {
         .integer('user_id')
         .unsigned()
         .references('users.id')
+        .onDelete('CASCADE')
       table
         .integer('level_id')
         .unsigned()
         .references('level_accesses.id')
+        .onDelete('CASCADE')
       table.timestamp('created_at', { useTz: true })
       table.timestamp('updated_at', { useTz: true })
     })

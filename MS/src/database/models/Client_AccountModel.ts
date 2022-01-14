@@ -9,7 +9,7 @@ export const Client_AccountModel = db.define('client_account', {
     allowNull: false,
     primaryKey: true
   },
-  user_id:{
+  client_id:{
     type: DataTypes.INTEGER,
     references:{
       model: 'clients',

@@ -2,7 +2,7 @@
 /* eslint-disable camelcase */
 import express from 'express';
 import { ClientModel } from './database/models/ClienteModel';
-import { Client_AccountModel } from './database/models/Client_AccountModel';
+// import { Client_AccountModel } from './database/models/Client_AccountModel';
 const { Kafka } = require('kafkajs');
 const app = express();
 
@@ -11,8 +11,9 @@ app.listen(3000, () => {
     clientId: 'my-app',
     brokers: ['localhost:9092', 'kafka:29092']
   })
-  const consumer_client = kafka.consumer({ groupId: 'user-group', fromBeginning: false })
-  const consumer_account = kafka.consumer({ groupId: 'account-group', fromBeginning: false })
+  const client_id = 0
+  const consumer_client = kafka.consumer({ groupId: 'user-group', fromBeginning: true })
+  const consumer_account = kafka.consumer({ groupId: 'account-group', fromBeginning: true })
   
   async function runClient(){
     
@@ -34,9 +35,11 @@ app.listen(3000, () => {
           zipcode: zipcode,
           average_salary: average_salary
         })
-        
+      
       },
     })
+  
+  await consumer_client.disconnect()
   }
 
   async function runAccount(){
@@ -47,23 +50,24 @@ app.listen(3000, () => {
         const email = message.value.toString()
         const emailJSON = JSON.parse(email)
         console.log(emailJSON.client.email)
-        const client = await ClientModel.findOne({
-          where:{
-            email: emailJSON.client.email
-          } 
+        const clientEmail = emailJSON.client.email
+        const clients = await ClientModel.findAll()
+        
+        ;(await clients).forEach((client) => {
+          console.log(client)
         })
-        console.log(client)
+        
         // const clientJSON = client?.toJSON()
         // console.log(clientJSON.id)
          
         // await Client_AccountModel.create({
         //   client_id: clientJSON.id,
         //   current_balance: 200
+
         // })
       }
     })
   }
-  
   runClient().catch(console.error)
   runAccount().catch(console.error)
 });

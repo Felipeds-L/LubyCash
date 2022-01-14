@@ -11,7 +11,7 @@ exports.Client_AccountModel = db_1.db.define('client_account', {
         allowNull: false,
         primaryKey: true
     },
-    user_id: {
+    client_id: {
         type: sequelize_1.DataTypes.INTEGER,
         references: {
             model: 'clients',

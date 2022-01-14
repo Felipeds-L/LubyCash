@@ -10,10 +10,12 @@ export default class UserStatuses extends BaseSchema {
         .integer('user_id')
         .unsigned()
         .references('users.id')
+        .onDelete('CASCADE')
       table
         .integer('status_id')
         .unsigned()
         .references('statuses.id')
+        .onDelete('CASCADE')
         .defaultTo(2)
       table.timestamp('created_at', { useTz: true })
       table.timestamp('updated_at', { useTz: true })

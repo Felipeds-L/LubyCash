@@ -9,14 +9,16 @@ const kafka = new Kafka({
   clientId: 'my-app',
   brokers: ['localhost:9092', 'kafka:29092']
 })
-const producer = kafka.producer()
+const producer_client = kafka.producer()
+const producer_account = kafka.producer()
 
 
 export default class UsersController {
   public async index({}: HttpContextContract) {}
 
   public async store({ request, response }: HttpContextContract) {
-    await producer.connect()
+    await producer_client.connect()
+    await producer_account.connect()
 
     try{
       const data = await request.only(
@@ -27,6 +29,7 @@ export default class UsersController {
           email: data.email
         })
         const user = await User.findByOrFail('email', data.email)
+
         const message = {
           user: {
             full_name: data.full_name,
@@ -51,22 +54,34 @@ export default class UsersController {
             user_id: user.id
           })
 
-          await producer.send({
+          await producer_client.send({
             topic: 'user',
             messages: [
               { value: JSON.stringify(message) },
             ],
           })
 
-          await producer.disconnect()
+          const message_account = {
+            client:{
+              email: data.email
+            }
+          }
+
+          await producer_account.send({
+            topic: 'account',
+            messages:[
+              {value: JSON.stringify(message_account)}
+            ]
+          })
+
+          await producer_client.disconnect()
+          await producer_account.disconnect()
         }else{
           await UserStatus.create({
             user_id: user.id,
             status_id: 2
           })
         }
-
-
 
         return response.status(200).json({Created: true})
       }catch{

@@ -7,6 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /* eslint-disable camelcase */
 const express_1 = __importDefault(require("express"));
 const ClienteModel_1 = require("./database/models/ClienteModel");
+// import { Client_AccountModel } from './database/models/Client_AccountModel';
 const { Kafka } = require('kafkajs');
 const app = (0, express_1.default)();
 app.listen(3000, () => {
@@ -14,11 +15,13 @@ app.listen(3000, () => {
         clientId: 'my-app',
         brokers: ['localhost:9092', 'kafka:29092']
     });
-    const consumer = kafka.consumer({ groupId: 'user-group', fromBeginning: false });
-    async function run() {
-        await consumer.connect();
-        await consumer.subscribe({ topic: 'user' });
-        await consumer.run({
+    const client_id = 0;
+    const consumer_client = kafka.consumer({ groupId: 'user-group', fromBeginning: true });
+    const consumer_account = kafka.consumer({ groupId: 'account-group', fromBeginning: true });
+    async function runClient() {
+        await consumer_client.connect();
+        await consumer_client.subscribe({ topic: 'user' });
+        await consumer_client.run({
             eachMessage: async ({ message }) => {
                 const user = message.value.toString();
                 const userJSON = JSON.parse(user);
@@ -34,18 +37,32 @@ app.listen(3000, () => {
                     zipcode: zipcode,
                     average_salary: average_salary
                 });
-                // const client = await ClientModel.findOne({
-                //   where:{
-                //     'email': email
-                //   }
-                // })
+            },
+        });
+        await consumer_client.disconnect();
+    }
+    async function runAccount() {
+        await consumer_account.connect();
+        await consumer_account.subscribe({ topic: 'account' });
+        await consumer_account.run({
+            eachMessage: async ({ message }) => {
+                const email = message.value.toString();
+                const emailJSON = JSON.parse(email);
+                console.log(emailJSON.client.email);
+                const clientEmail = emailJSON.client.email;
+                const clients = await ClienteModel_1.ClientModel.findAll();
+                (await clients).forEach((client) => {
+                    console.log(client);
+                });
                 // const clientJSON = client?.toJSON()
+                // console.log(clientJSON.id)
                 // await Client_AccountModel.create({
                 //   client_id: clientJSON.id,
                 //   current_balance: 200
                 // })
-            },
+            }
         });
     }
-    run().catch(console.error);
+    runClient().catch(console.error);
+    runAccount().catch(console.error);
 });
