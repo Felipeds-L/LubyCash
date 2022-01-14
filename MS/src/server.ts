@@ -11,13 +11,14 @@ app.listen(3000, () => {
     clientId: 'my-app',
     brokers: ['localhost:9092', 'kafka:29092']
   })
-  const consumer = kafka.consumer({ groupId: 'user-group', fromBeginning: false })
+  const consumer_client = kafka.consumer({ groupId: 'user-group', fromBeginning: false })
+  const consumer_account = kafka.consumer({ groupId: 'account-group', fromBeginning: false })
   
-  async function run(){
+  async function runClient(){
     
-    await consumer.connect()
-    await consumer.subscribe({ topic: 'user'})
-    await consumer.run({
+    await consumer_client.connect()
+    await consumer_client.subscribe({ topic: 'user'})
+    await consumer_client.run({
       eachMessage: async ({ message }: any) => {
         const user = message.value.toString()
         const userJSON = JSON.parse(user)
@@ -33,21 +34,38 @@ app.listen(3000, () => {
           zipcode: zipcode,
           average_salary: average_salary
         })
-        // const client = await ClientModel.findOne({
-        //   where:{
-        //     'email': email
-        //   }
-        // })
+        
+      },
+    })
+  }
+
+  async function runAccount(){
+    await consumer_account.connect()
+    await consumer_account.subscribe({ topic: 'account'})
+    await consumer_account.run({
+      eachMessage: async({ message }: any) => {
+        const email = message.value.toString()
+        const emailJSON = JSON.parse(email)
+        console.log(emailJSON.client.email)
+        const client = await ClientModel.findOne({
+          where:{
+            email: emailJSON.client.email
+          } 
+        })
+        console.log(client)
         // const clientJSON = client?.toJSON()
+        // console.log(clientJSON.id)
+         
         // await Client_AccountModel.create({
         //   client_id: clientJSON.id,
         //   current_balance: 200
         // })
-      },
+      }
     })
   }
   
-  run().catch(console.error)
+  runClient().catch(console.error)
+  runAccount().catch(console.error)
 });
 
  
