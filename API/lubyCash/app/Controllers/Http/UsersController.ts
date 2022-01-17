@@ -22,11 +22,12 @@ export default class UsersController {
 
     try{
       const data = await request.only(
-        ['full_name', 'email', 'phone', 'cpf_number', 'address', 'city', 'state', 'zipcode', 'average_salary', 'level_access']
+        ['full_name', 'password', 'email', 'phone', 'cpf_number', 'address', 'city', 'state', 'zipcode', 'average_salary', 'level_access']
       );
       try{
         await User.create({
-          email: data.email
+          email: data.email,
+          password: data.password
         })
         const user = await User.findByOrFail('email', data.email)
 
