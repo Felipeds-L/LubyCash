@@ -27,7 +27,7 @@ Sobre o MS: Será em Express e utilizaremos o serviço de mensageria Kafka para 
 
 Regras para Avaliação: Renda Mensal < 500 = Reprovado || Renda Mensal >= 500 = Aprovado. Todo cliente aprovado ganhará R$ 200,00 de boas vindas. - Feito
 
-Observações: O microsserviço deverá mandar um e-mail informando o cliente sobre o status da solicitação. Um CPF reprovado, não poderá enviar nova solicitação.
+Observações: O microsserviço deverá mandar um e-mail informando o cliente sobre o status da solicitação. Um CPF reprovado, não poderá enviar nova solicitação - Feito
 
 RF05 – Pix: Os clientes aprovados poderão fazer um PIX para outros clientes do banco utilizando o CPF.
 
