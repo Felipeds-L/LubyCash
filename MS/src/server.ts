@@ -3,7 +3,9 @@
 import express from 'express';
 import { ClientModel } from './database/models/ClienteModel';
 import { Client_AccountModel } from './database/models/Client_AccountModel';
+
 const { Kafka } = require('kafkajs');
+const nodemailer = require("nodemailer");
 const app = express();
 
 app.listen(3000, () => {
@@ -13,7 +15,7 @@ app.listen(3000, () => {
   })
 
   const consumer_client = kafka.consumer({ groupId: 'user-group' })
-  // const consumer_account = kafka.consumer({ groupId: 'account-group' })
+  const consumer_status = kafka.consumer({ groupId: 'user-group '})
   
   async function runClient(){
     
@@ -44,26 +46,52 @@ app.listen(3000, () => {
     })
   }
 
-  // async function runAccount(){
-  //   await consumer_account.connect()
-  //   await consumer_account.subscribe({ topic: 'account'})
-  //   await consumer_account.run({
-  //     eachMessage: async({ message }: any) => {
-  //       const email = message.value.toString()
-  //       const emailJSON = JSON.parse(email)
-  //       console.log(emailJSON.client.email)
-  //       const clients = await Client_AccountModel.create({
-  //         client_owner: emailJSON.client.email,
-  //         current_balance: 200
-  //       })
-        
-  //       console.log(clients)
+  async function runStatus(){
+    await consumer_status.connect()
+    await consumer_status.subscribe({ topic: 'status' })
 
-  //     }
-  //   })
-  // }
+    await consumer_status.run({
+      eachMessage: async ({ message }: any) => {
+        const user_status = JSON.parse(message.value.toString())
+        const { username, status_code, user_email} = user_status.status
+        console.log(username, status_code, user_email)
+        sendEmail(user_email, status_code, username)
+      }
+    })
+  }
+ 
   runClient().catch(console.error)
-  // runAccount().catch(console.error)
+  runStatus().catch(console.error)
+
+
+  async function sendEmail(email: any, status: any, username: any){
+    const transport = nodemailer.createTransport({
+      host: "smtp.mailtrap.io",
+      port: 2525,
+      auth: {
+        user: "9665e746ab93cf",
+        pass: "6acd26e0dc004d"
+      }
+    });
+    if(status === 1){
+      await transport.sendMail({
+        from: 'srMilk@mail.com',
+        to: email,
+        subject: `Status of solicitation from ${username}`,
+        text: `Hello ${username}, we congrats you! You have been aproved to be a client of our bank! `,
+        html: `<b>Hello ${username}, we congrats you! You have been aproved to be a client of our bank!</b>`, 
+      });
+    }else{
+      await transport.sendMail({
+        from: 'srMilk@mail.com',
+        to: email,
+        subject: `Status of solicitation from ${username}`,
+        text: `Hello ${username}, unfortunatly we can not acept your appointment to our bank at this moment, keep your datas up to date.`,
+        html: `<b>Hello ${username}, unfortunatly we can not acept your appointment to our bank at this moment, keep your datas up to date.</b>`,
+      });
+    }
+    
+  }
 });
 
  

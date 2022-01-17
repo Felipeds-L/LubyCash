@@ -10,7 +10,7 @@ const kafka = new Kafka({
   brokers: ['localhost:9092', 'kafka:29092']
 })
 const producer_client = kafka.producer()
-// const producer_account = kafka.producer()
+const producer_status = kafka.producer()
 
 
 export default class UsersController {
@@ -18,7 +18,7 @@ export default class UsersController {
 
   public async store({ request, response }: HttpContextContract) {
     await producer_client.connect()
-    // await producer_account.connect()
+    await producer_status.connect()
 
     try{
       const data = await request.only(
@@ -30,7 +30,6 @@ export default class UsersController {
         })
         const user = await User.findByOrFail('email', data.email)
 
-        // message with the datas to create a client
         const message = {
           user: {
             full_name: data.full_name,
@@ -44,12 +43,7 @@ export default class UsersController {
             average_salary: data.average_salary,
           }
         }
-        // client's email to create an account and link it from a client
-        // const message_account = {
-        //   client:{
-        //     email: data.email
-        //   }
-        // }
+
         // this if check the datas and aprove or deni the user
         if(data.average_salary > 500){
           // insert a user status as aproved = 1
@@ -57,12 +51,28 @@ export default class UsersController {
             user_id: user.id,
             status_id: 1
           })
+
+          const message_status = {
+            status:{
+              user_email: data.email,
+              username: data.full_name,
+              status_code: 1
+            }
+          }
+
+          await producer_status.send({
+            topic: 'status',
+            messages: [
+              { value: JSON.stringify(message_status)}
+            ]
+          })
+
+          await producer_status.disconnect()
           // give the user a level access, default as client
           await UserLevelAccess.create({
             level_id: data.level_access,
             user_id: user.id
           })
-
 
           // send the client's data from the consumer on MS
           await producer_client.send({
@@ -73,22 +83,27 @@ export default class UsersController {
           })
 
           await producer_client.disconnect()
-          // // send the client's email to create the account from the consumer on MS
-          // await producer_account.send({
-          //   topic: 'account',
-          //   messages:[
-          //     {value: JSON.stringify(message_account)}
-          //   ]
-          // })
-
-          // await producer_account.disconnect()
-
 
         }else{
           // give the user a level 2 of status, that's mean denied
           await UserStatus.create({
             user_id: user.id,
             status_id: 2
+          })
+
+          const message_status = {
+            status:{
+              user_email: data.email,
+              username: data.full_name,
+              status_code: 0
+            }
+          }
+
+          await producer_status.send({
+            topic: 'status',
+            messages: [
+              { value: JSON.stringify(message_status)}
+            ]
           })
         }
 
