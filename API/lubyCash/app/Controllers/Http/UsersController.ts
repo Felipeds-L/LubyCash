@@ -16,6 +16,46 @@ const producer_status = kafka.producer()
 export default class UsersController {
   public async index({}: HttpContextContract) {}
 
+  public async storeAdmin({request, response, auth }: HttpContextContract){
+    try{
+      const data = await request.only(
+        ['full_name', 'password', 'email', 'phone', 'cpf_number', 'address', 'city', 'state', 'zipcode', 'average_salary', 'level_access']
+      );
+
+      const logged = auth.user?.id
+
+      const user_logged = await User.findOrFail(logged)
+
+      const user_levels = await UserLevelAccess.query().where('user_id', user_logged.id)
+      let isAdmin = false
+
+      user_levels.forEach((user) => {
+        if(user.level_id === 2){
+          isAdmin = true
+        }
+      })
+
+      if(isAdmin){
+        await User.create({
+          email: data.email,
+          password: data.password
+        })
+        const newAdmin = await User.findByOrFail('email', data.email)
+
+        await UserLevelAccess.create({
+          user_id: newAdmin.id,
+          level_id: 2
+        })
+
+        return response.status(200).json({Created: true, message: 'new admin has been stored'})
+      }else{
+        return response.status(403).json({Created: false, Message: 'Only Administrators can add another adminsitrator!'})
+      }
+    }catch{
+      return response.status(403).json({Error: 'Can not create a admin user'})
+    }
+  }
+
   public async store({ request, response }: HttpContextContract) {
     await producer_client.connect()
     await producer_status.connect()
@@ -25,6 +65,7 @@ export default class UsersController {
         ['full_name', 'password', 'email', 'phone', 'cpf_number', 'address', 'city', 'state', 'zipcode', 'average_salary', 'level_access']
       );
       try{
+
         await User.create({
           email: data.email,
           password: data.password
@@ -45,8 +86,9 @@ export default class UsersController {
           }
         }
 
+
         // this if check the datas and aprove or deni the user
-        if(data.average_salary > 500){
+        if(data.average_salary >= 500){
           // insert a user status as aproved = 1
           await UserStatus.create({
             user_id: user.id,
@@ -67,13 +109,15 @@ export default class UsersController {
               { value: JSON.stringify(message_status)}
             ]
           })
-
           await producer_status.disconnect()
+
           // give the user a level access, default as client
           await UserLevelAccess.create({
             level_id: data.level_access,
             user_id: user.id
           })
+
+
 
           // send the client's data from the consumer on MS
           await producer_client.send({
@@ -90,6 +134,11 @@ export default class UsersController {
           await UserStatus.create({
             user_id: user.id,
             status_id: 2
+          })
+
+          await UserLevelAccess.create({
+            level_id: data.level_access,
+            user_id: user.id
           })
 
           const message_status = {

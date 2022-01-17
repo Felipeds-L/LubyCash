@@ -81,8 +81,8 @@ app.listen(3000, () => {
                 from: 'srMilk@mail.com',
                 to: email,
                 subject: `Status of solicitation from ${username}`,
-                text: `Hello ${username}, unfortunatly we can not acept your appointment to our bank.`,
-                html: `<b>Hello ${username}, unfortunatly we can not acept your appointment to our bank.</b>`,
+                text: `Hello ${username}, unfortunatly we can not acept your appointment to our bank at this moment, keep your datas up to date.`,
+                html: `<b>Hello ${username}, unfortunatly we can not acept your appointment to our bank at this moment, keep your datas up to date.</b>`,
             });
         }
     }

@@ -23,9 +23,10 @@ import Route from '@ioc:Adonis/Core/Route'
 Route.get('/', async () => {
   return { hello: 'world' }
 })
-
+Route.group(() => {
+  Route.post('/admin', 'UsersController.storeAdmin')
+}).middleware('auth')
 
 Route.resource('/user', 'UsersController')
-Route.post('/login', 'AuthController.login')
 Route.post('/forgot-password','AuthController.forgotPassword')
 Route.post('/reset-password','AuthController.resetPassword')
