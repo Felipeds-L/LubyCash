@@ -2,21 +2,21 @@
 import { DataTypes } from "sequelize";
 import { db } from "../db";
 
-export const Client_AccountModel = db.define('client_account', {
+export const Client_AccountModel = db.define('client_accounts', {
   id:{
     type: DataTypes.INTEGER,
     autoIncrement: true,
     allowNull: false,
     primaryKey: true
   },
-  client_id:{
+  client_owner:{
     type: DataTypes.INTEGER,
     references:{
       model: 'clients',
-      key: 'id'
+      key: 'email'
     },
     onUpdate: 'CASCADE',
-    onDelete: 'SET NULL',
+    onDelete: 'CASCADE',
   },
   current_balance:{
     type: DataTypes.NUMBER

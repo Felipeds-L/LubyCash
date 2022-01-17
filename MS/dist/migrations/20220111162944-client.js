@@ -19,7 +19,7 @@ module.exports = {
                 allowNull: true,
                 unique: true
             },
-            cpf_phone: {
+            cpf_number: {
                 type: Sequelize.STRING,
                 allowNull: false,
                 unique: true
@@ -51,6 +51,6 @@ module.exports = {
         });
     },
     down: async (queryInterface, Sequelize) => {
-        return await queryInterface.dropTable('users');
+        return await queryInterface.dropTable('clients');
     }
 };

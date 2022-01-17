@@ -2,21 +2,22 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    return await queryInterface.createTable('client_account', {
+    return await queryInterface.createTable('client_accounts', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
         allowNull: false
       },
-      client_id: {
-        type: Sequelize.INTEGER,
+      client_owner: {
+        type: Sequelize.STRING,
         references: {
           model: 'clients',
-          key: 'id'
+          key: 'email'
         },
+        unique: true,
         onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
+        onDelete: 'CASCADE',
       },
       current_balance:{
         type: Sequelize.FLOAT
