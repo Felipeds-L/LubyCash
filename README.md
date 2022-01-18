@@ -11,7 +11,7 @@ RNF04 – Obrigatório a utilização do Docker. - Feito/Parcialmente
 
 Requisitos Funcionais:
 
-RF01 – Crud de Admins: Apenas administradores poderão cadastrar outros.
+RF01 – Crud de Admins: Apenas administradores poderão cadastrar outros. - Feito/Parcial
 
 RF02 – Listagem de todos os clientes por status: Apenas para administradores.
 
@@ -31,4 +31,4 @@ Observações: O microsserviço deverá mandar um e-mail informando o cliente so
 
 RF05 – Pix: Os clientes aprovados poderão fazer um PIX para outros clientes do banco utilizando o CPF.
 
-RF06 – Login de acesso para admins/clientes e recuperar senha.
+RF06 – Login de acesso para admins/clientes e recuperar senha. - Feito
