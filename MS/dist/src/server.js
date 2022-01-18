@@ -18,6 +18,8 @@ app.listen(3000, () => {
     });
     const consumer_client = kafka.consumer({ groupId: 'user-group' });
     const consumer_status = kafka.consumer({ groupId: 'user-group ' });
+    const consumer_ShowClients = kafka.consumer({ groupId: 'clients' });
+    const producer_ShowClients = kafka.producer({ groupId: 'user-group' });
     async function runClient() {
         await consumer_client.connect();
         await consumer_client.subscribe({ topic: 'user' });
@@ -56,8 +58,22 @@ app.listen(3000, () => {
             }
         });
     }
+    async function runShowClients() {
+        await consumer_ShowClients.connect();
+        // await producer_ShowClients.connect()
+        await consumer_ShowClients.subscribe({ topic: 'showClients' });
+        await consumer_ShowClients.run({
+            eachMessage: async ({ message }) => {
+                const emails = message.value.toString();
+                const emailJSON = JSON.stringify(emails); // its working "[\"newUser@email.com\",\"newOtherUser@email.com\"]"
+                const newEmails = JSON.parse(emailJSON); // its working
+                console.log(newEmails[1]);
+            }
+        });
+    }
     runClient().catch(console.error);
     runStatus().catch(console.error);
+    runShowClients().catch(console.error);
     async function sendEmail(email, status, username) {
         const transport = nodemailer.createTransport({
             host: "smtp.mailtrap.io",

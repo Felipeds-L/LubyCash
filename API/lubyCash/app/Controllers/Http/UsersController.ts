@@ -172,4 +172,5 @@ export default class UsersController {
   public async update({}: HttpContextContract) {}
 
   public async destroy({}: HttpContextContract) {}
+
 }

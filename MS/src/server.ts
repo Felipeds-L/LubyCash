@@ -16,6 +16,8 @@ app.listen(3000, () => {
 
   const consumer_client = kafka.consumer({ groupId: 'user-group' })
   const consumer_status = kafka.consumer({ groupId: 'user-group '})
+  const consumer_ShowClients = kafka.consumer({ groupId: 'clients' })
+  const producer_ShowClients = kafka.producer({ groupId: 'user-group' })
   
   async function runClient(){
     
@@ -59,9 +61,26 @@ app.listen(3000, () => {
       }
     })
   }
+
+  async function runShowClients(){
+    await consumer_ShowClients.connect()
+    // await producer_ShowClients.connect()
+    await consumer_ShowClients.subscribe({ topic: 'showClients'})
+
+    await consumer_ShowClients.run({
+      eachMessage: async({message}: any) => {
+        const emails = message.value.toString()
+        const emailJSON = JSON.stringify(emails) // its working "[\"newUser@email.com\",\"newOtherUser@email.com\"]"
+        const newEmails = JSON.parse(emailJSON) // its working
+        
+        console.log(newEmails)
+      }
+    })
+  }
  
   runClient().catch(console.error)
   runStatus().catch(console.error)
+  runShowClients().catch(console.error)
 
 
   async function sendEmail(email: any, status: any, username: any){

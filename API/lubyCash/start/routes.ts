@@ -24,7 +24,8 @@ Route.get('/', async () => {
   return { hello: 'world' }
 })
 Route.group(() => {
-  Route.post('/admin', 'UsersController.storeAdmin')
+  Route.post('/admin', 'AdminsController.store')
+  Route.get('/clients/:status', 'AdminsController.showClients')
 }).middleware('auth')
 
 Route.resource('/user', 'UsersController')
