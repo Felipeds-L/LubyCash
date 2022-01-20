@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "ts-node-dev -r dotenv/config ./src/server.ts",
+    "dev": "nodemon ./app.js",
     "build": "tsc",
     "start": "node -r dotenv/config ./dist/src/server.js"
   },
@@ -34,6 +34,8 @@
     "kafkajs": "^1.15.0",
     "mysql2": "^2.3.3",
     "nodemailer": "^6.7.2",
-    "sequelize": "^6.13.0"
+    "nodemon": "^2.0.15",
+    "sequelize": "^6.13.0",
+    "sucrase": "^3.20.3"
   }
 }

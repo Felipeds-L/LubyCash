@@ -26,8 +26,12 @@ Route.get('/', async () => {
 Route.group(() => {
   Route.post('/admin', 'AdminsController.store')
   Route.get('/clients/:status', 'AdminsController.showClients')
+  Route.post('/clients/pix', 'UsersController.madePix')
+  Route.post('/clients/account', 'UsersController.InAccount')
+  Route.post('/clients', 'ClientsController.store')
 }).middleware('auth')
 
 Route.resource('/user', 'UsersController')
+Route.post('/login', 'AuthController.login')
 Route.post('/forgot-password','AuthController.forgotPassword')
 Route.post('/reset-password','AuthController.resetPassword')

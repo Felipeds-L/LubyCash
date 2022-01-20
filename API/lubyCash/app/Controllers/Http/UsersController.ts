@@ -11,6 +11,8 @@ const kafka = new Kafka({
 })
 const producer_client = kafka.producer()
 const producer_status = kafka.producer()
+const producer_pix = kafka.producer()
+const producer_account = kafka.producer()
 
 
 export default class UsersController {
@@ -70,7 +72,6 @@ export default class UsersController {
           email: data.email,
           password: data.password
         })
-        const user = await User.findByOrFail('email', data.email)
 
         const message = {
           user: {
@@ -86,13 +87,14 @@ export default class UsersController {
           }
         }
 
+        const user = await User.findByOrFail('email', data.email)
 
         // this if check the datas and aprove or deni the user
         if(data.average_salary >= 500){
+          console.log('entrou')
           // insert a user status as aproved = 1
           await UserStatus.create({
-            user_id: user.id,
-            status_id: 1
+            user_id: user.id
           })
 
           const message_status = {
@@ -173,4 +175,50 @@ export default class UsersController {
 
   public async destroy({}: HttpContextContract) {}
 
+
+  public async madePix({ auth, request }: HttpContextContract){
+    const user_logged = await User.findOrFail(auth.user?.id);
+    const status = await UserStatus.query().select('status_id').where('user_id', user_logged.id)
+    let isClient = false
+    status.forEach((user) => {
+      if(user.status_id === 1){
+        isClient = true
+      }
+    })
+
+    if(isClient){
+      const data = await request.only(['cpf_from', 'cpf_to', 'pix_value'])
+      await producer_pix.connect()
+      await producer_pix.send({
+        topic: 'pix',
+        messages: [
+          {value: JSON.stringify(data)}
+        ]
+      })
+
+    }
+    // await producer_pix.disconnect()
+  }
+
+  public async InAccount({ auth, request}: HttpContextContract ) {
+    const data = await request.only(['value_to_add', 'operation'])
+    const user_logged = await User.findOrFail(auth.user?.id)
+    const message = {
+      datas: {
+        values: data.value_to_add,
+        operation: data.operation,
+        user: user_logged.email
+      }
+    }
+    await producer_account.connect()
+    await producer_account.send({
+      topic: 'account',
+      messages: [
+        {value: JSON.stringify(message)}
+      ]
+    })
+
+    // await producer_account.disconnect()
+
+  }
 }

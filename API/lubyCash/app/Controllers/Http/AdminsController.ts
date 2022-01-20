@@ -2,6 +2,7 @@ import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import User from 'App/Models/User'
 import UserLevelAccess from 'App/Models/UserLevelAccess'
 import UserStatus from 'App/Models/UserStatus';
+const axios = require('axios').default;
 
 const { Kafka } = require('kafkajs')
 
@@ -9,6 +10,9 @@ const kafka = new Kafka({
   clientId: 'my-app',
   brokers: ['localhost:9092', 'kafka:29092']
 })
+
+const consumer_ShowClients = kafka.consumer({ groupId: 'send_clients', fromBeginning: true})
+
 
 export default class AdminsController {
   public async index({}: HttpContextContract) {}
@@ -68,7 +72,7 @@ export default class AdminsController {
 
 
         if(status == 1){
-          console.log('entrou no 1')
+
           const users_email: any[] = []
           const users_aproved = await UserStatus.query().select('user_id').where('status_id', 1)
 
@@ -77,7 +81,7 @@ export default class AdminsController {
             users_email.push(user.email)
 
           }
-          console.log(users_email)
+
           const producer = kafka.producer()
 
           await producer.connect()
@@ -89,6 +93,20 @@ export default class AdminsController {
           })
 
           await producer.disconnect()
+
+          await consumer_ShowClients.subscribe({topic: 'ClientsShow', fromBeginning: true})
+          // falta ajustar isso
+
+          await consumer_ShowClients.run({
+            eachMessage: async ({message}) => {
+              JSON.parse(message.value.toString())
+            }
+          })
+
+          const datas = await axios.get('http://localhost:3000/clients')
+          const clients: any[] = datas.data
+
+          console.log(clients)
         }else{
           const list_users: any[] = []
           const users_denied = await UserStatus.query().select('user_id').where('status_id', 2)
@@ -96,9 +114,7 @@ export default class AdminsController {
             const user = await User.findOrFail(users_denied[x].user_id)
             list_users.push(user)
           }
-
           return  response.status(200).json({Users: list_users})
-
         }
 
       }
@@ -122,5 +138,13 @@ export default class AdminsController {
     })
 
     return isAdmin
+
   }
+
+  public addInList(valores, lista){
+    for(let x=0;x<valores.length;x++){
+      lista.push(valores[x])
+    }
+  }
+
 }
