@@ -40,6 +40,9 @@ const ClientModel = db.define('clients', {
     type: DataTypes.NUMBER,
     allowNull: false
   },
+  status:{
+    type: DataTypes.BOOLEAN,
+  },
   createdAt:{
     type: DataTypes.DATE,
   },

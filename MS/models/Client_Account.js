@@ -10,7 +10,7 @@ const Client_AccountModel = db.define('client_account', {
     allowNull: false,
     primaryKey: true
   },
-  client_email:{
+  client_cpf:{
     type: DataTypes.STRING,
     allowNull: false,
     references:{

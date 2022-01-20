@@ -16,7 +16,7 @@ export default class ClientsController{
     const producer = kafka.producer()
 
     consumer.connect()
-    consumer.subscribe({ topic: 'status-client' })
+    consumer.subscribe({ topic: 'status-client'})
 
     const data = await request.only(
       ['full_name', 'email', 'phone', 'cpf_number', 'address', 'city', 'state', 'zipcode', 'current_balance', 'average_salary']
@@ -36,7 +36,7 @@ export default class ClientsController{
             {
               value: JSON.stringify({
                 full_name: data.full_name,
-                email: user_logged.email,
+                email: data.email,
                 phone: data.phone,
                 cpf_number: data.cpf_number,
                 address: data.address,
@@ -58,33 +58,34 @@ export default class ClientsController{
       eachMessage: async ({message}) => {
         if(message.value){
           const status_message = JSON.parse(message.value.toString())
-
-          await UserStatus.create({
-            user_id: user_logged.id,
-            status_id: status_message.is_Approved
+          console.log('message: ' + status_message)
+          UserStatus.create({
+            user_id: user_logged.id
           })
         }
       }
     })
 
     await consumer.disconnect()
-
+    const status = await UserStatus.findByOrFail('user_id', user_logged.id)
     const api = await axios({
       url: "http://localhost:3000/clients?status=1",
       method: 'get'
     })
-
-    if(api.status == 200){
+    console.log(api.data)
+    console.log(status)
+    if(api.status === 200){
       for(let x=0;x<api.data.length;x++){
-        user_status.status_id = 1
+        status.status_id = 1
         await user_status.save()
-        return response.status(200).json({client: api.data[x]})
+        return response.status(200).json({created: true})
+        // return response.status(200).json({client: api.data[x]})
       }
     }else{
-      user_status.status_id = 2
+      status.status_id = 2
       await user_status.save()
       console.log(api.status)
-      return response.status(400).json({message: 'You can not become a client of our bank!'})
+      // return response.status(400).json({message: 'You can not become a client of our bank!'})
     }
 
 
