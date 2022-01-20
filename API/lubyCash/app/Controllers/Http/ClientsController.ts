@@ -68,24 +68,21 @@ export default class ClientsController{
 
     await consumer.disconnect()
     const status = await UserStatus.findByOrFail('user_id', user_logged.id)
+    console.log(status.user_id)
     const api = await axios({
       url: "http://localhost:3000/clients?status=1",
       method: 'get'
     })
-    console.log(api.data)
-    console.log(status)
     if(api.status === 200){
       for(let x=0;x<api.data.length;x++){
         status.status_id = 1
-        await user_status.save()
-        return response.status(200).json({created: true})
-        // return response.status(200).json({client: api.data[x]})
+        await status.save()
+        return response.status(200).json({client: api.data[x]})
       }
     }else{
       status.status_id = 2
-      await user_status.save()
-      console.log(api.status)
-      // return response.status(400).json({message: 'You can not become a client of our bank!'})
+      await status.save()
+      return response.status(400).json({message: 'You can not become a client of our bank!'})
     }
 
 
