@@ -54,12 +54,13 @@ export default class ClientsController{
         await producer.disconnect()
       }
     }
-
+    // não ta entrando
     await consumer.run({
       eachMessage: async ({message}) => {
         if(message.value){
+          console.log('entrou')
           const status_message = JSON.parse(message.value.toString())
-          console.log('message: ' + status_message)
+          console.log(status_message)
           UserStatus.create({
             user_id: user_logged.id,
             status_id: status_message.isApproved

@@ -31,7 +31,6 @@ class Consumers{
               status: 400
             });
           }else if(client_data.average_salary >= 500){
-            const producer = new Producer()
             const client = await Client.create({
               full_name: client_data.full_name,
               email: client_data.email,
@@ -49,10 +48,12 @@ class Consumers{
               client_cpf: client_data.cpf_number,
               current_balance: 200
             })
-
+            
+            const producer = new Producer()
+            
             producer.produce('status-client', {
               is_Approved: true, 
-              client
+              client: client
             })
           }
         }
