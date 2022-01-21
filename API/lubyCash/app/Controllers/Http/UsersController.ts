@@ -70,6 +70,7 @@ export default class UsersController {
 
         await User.create({
           email: data.email,
+          cpf_number: data.cpf_number,
           password: data.password
         })
 

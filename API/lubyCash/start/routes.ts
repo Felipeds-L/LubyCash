@@ -26,9 +26,9 @@ Route.get('/', async () => {
 Route.group(() => {
   Route.post('/admin', 'AdminsController.store')
   Route.get('/clients/:status', 'AdminsController.showClients')
-  Route.post('/clients/pix', 'UsersController.madePix')
+  Route.post('/clients/pix', 'ClientsController.madePix')
   Route.post('/clients/account', 'UsersController.InAccount')
-  Route.post('/clients', 'ClientsController.store')
+  Route.resource('/clients', 'ClientsController')
 }).middleware('auth')
 
 Route.resource('/user', 'UsersController')

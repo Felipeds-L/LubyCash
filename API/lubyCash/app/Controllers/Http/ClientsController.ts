@@ -1,6 +1,7 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import User from 'App/Models/User'
 import UserStatus from 'App/Models/UserStatus'
+import UserLevelAccess from 'App/Models/UserLevelAccess'
 import { Kafka } from 'kafkajs'
 import axios from 'axios'
 
@@ -60,7 +61,8 @@ export default class ClientsController{
           const status_message = JSON.parse(message.value.toString())
           console.log('message: ' + status_message)
           UserStatus.create({
-            user_id: user_logged.id
+            user_id: user_logged.id,
+            status_id: status_message.isApproved
           })
         }
       }
@@ -70,7 +72,7 @@ export default class ClientsController{
     const status = await UserStatus.findByOrFail('user_id', user_logged.id)
     console.log(status.user_id)
     const api = await axios({
-      url: "http://localhost:3000/clients?status=1",
+      url: "http://localhost:3000/clients?status=undefined&date=undefined",
       method: 'get'
     })
     if(api.status === 200){
@@ -86,5 +88,47 @@ export default class ClientsController{
     }
 
 
+  }
+
+  public async index({ auth, request, response}: HttpContextContract){
+    const user_level = await UserLevelAccess.findByOrFail('user_id', auth.user?.id)
+    if(user_level.level_id === 2){
+      const {status, date} = request.qs()
+      const api = await axios.get(`http://localhost:3000/clients?status=${status}&date=${date}`)
+      return response.status(200).json({Message: api.data})
+    }else{
+      return response.status(400).json({Error: 'Only Administrators can see all the clients!'})
+    }
+  }
+
+  public async madePix({auth, request, response}: HttpContextContract){
+    const logged = await UserStatus.findByOrFail('user_id', auth.user?.id)
+    const data = await request.only(['value', 'client_to'])
+
+    const user_logged = await User.findOrFail(auth.user?.id)
+    const user_destination = await User.findByOrFail('cpf_number', data.client_to)
+    const status_destination = await UserStatus.findByOrFail('user_id', user_destination.id)
+    if(logged.status_id === 1){
+      if(!user_logged.cpf_number){
+        return response.status(400).json({Error: 'can not find your cpf!'})
+      }else if(!user_destination.cpf_number){
+        return response.status(400).json({Error: 'CPF destination its not a user'})
+      }else if(status_destination.status_id !== 1){
+        return response.status(400).json({Error: 'CPF destination its not a client'})
+      }else{
+        const api = await axios({
+          url: `http://localhost:3000/clients/pix`,
+          method: 'post',
+          data:{
+            client_from: user_logged.cpf_number,
+            client_to: data.client_to,
+            value: data.value
+          }
+        })
+
+      return api.data
+      }
+
+    }
   }
 }

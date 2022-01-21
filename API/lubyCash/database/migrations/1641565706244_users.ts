@@ -7,6 +7,7 @@ export default class Users extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
       table.string('email').unique().notNullable()
+      table.string('cpf_number').unique().notNullable()
       table.string('password').notNullable()
       table.string('token')
       table.timestamp('created_at', { useTz: true })

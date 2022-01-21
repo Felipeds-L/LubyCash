@@ -103,10 +103,6 @@ export default class AdminsController {
             }
           })
 
-          const datas = await axios.get('http://localhost:3000/clients')
-          const clients: any[] = datas.data
-
-          console.log(clients)
         }else{
           const list_users: any[] = []
           const users_denied = await UserStatus.query().select('user_id').where('status_id', 2)

@@ -10,23 +10,21 @@ module.exports = {
         autoIncrement: true,
         allowNull: false
       },
-      user_id_from:{
+      cpf_origin:{
         type: Sequelize.STRING,
         references: {
           model: 'clients',
           key: 'cpf_number'
         },
-        unique: true,
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      user_id_to:{
+      cpf_destination:{
         type: Sequelize.STRING,
         references: {
           model: 'clients',
           key: 'cpf_number'
         },
-        unique: true,
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
