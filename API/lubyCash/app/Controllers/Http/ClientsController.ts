@@ -52,8 +52,9 @@ export default class ClientsController{
         });
 
         await producer.disconnect()
-      }
+      }      
     }
+
     // não ta entrando
     await consumer.run({
       eachMessage: async ({message}) => {
@@ -70,22 +71,27 @@ export default class ClientsController{
     })
 
     await consumer.disconnect()
+    
     const status = await UserStatus.findByOrFail('user_id', user_logged.id)
     console.log(status.user_id)
     const api = await axios({
-      url: "http://localhost:3000/clients?status=undefined&date=undefined",
+      url: "http://localhost:3000/clients?status=1&date=undefined",
       method: 'get'
     })
+    console.log(api.status)
     if(api.status === 200){
+      console.log(api.data)
       for(let x=0;x<api.data.length;x++){
-        status.status_id = 1
-        await status.save()
-        return response.status(200).json({client: api.data[x]})
+        if(api.data[x].is_Approved === true){
+          status.status_id = 1
+          await status.save()
+          return response.status(200).json({client: api.data[x]})
+        }else{
+          status.status_id = 2
+          await status.save()
+          return response.status(400).json({message: 'You can not become a client of our bank!'})
+        }
       }
-    }else{
-      status.status_id = 2
-      await status.save()
-      return response.status(400).json({message: 'You can not become a client of our bank!'})
     }
 
 
