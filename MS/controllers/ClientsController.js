@@ -11,7 +11,7 @@ module.exports = {
         email: email
       }
     });
-    return res.json(clients);
+    return res.json({Client: clients});
   },
 
   async status(req, res){

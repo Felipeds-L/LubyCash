@@ -35,7 +35,7 @@ module.exports = {
   },
 
   async extract(req, res){
-    // const {client, date_from, date_to} = req.body;
+
     const { client, date_from, date_to }= req.body
 
     if(client === null){
@@ -63,6 +63,6 @@ module.exports = {
     })
 
     console.log(pixes)
-    return res.json(pixes)
+    return res.json({Extrato: pixes})
   }
 }
