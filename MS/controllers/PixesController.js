@@ -7,7 +7,7 @@ module.exports = {
   async store(req, res){
     const { client_from, client_to, value} = req.body
 
-    console.log(client_to)
+
     const account_from = await ClientAccount.findOne({where: { client_cpf: client_from}})
     const account_to = await ClientAccount.findOne({where: {client_cpf: client_to}})
 
@@ -41,9 +41,9 @@ module.exports = {
     if(client === null){
       return res.json({Message: 'specify a client!'})
     }
-    console.log(date_from)
+
     if(date_from === 'undefined' && date_to === 'undefined'){
-      console.log('hello there')
+      
       const pixes = await Pix.findAll({
       where:{
         [Op.or]: [{cpf_origin: client}, [{cpf_destination: client}]]
@@ -62,7 +62,6 @@ module.exports = {
       }
     })
 
-    console.log(pixes)
     return res.json({Extrato: pixes})
   }
 }

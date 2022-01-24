@@ -25,7 +25,6 @@ export default class AdminsController {
           isAdmin = true
         }
       })
-      console.log(isAdmin)
       if(isAdmin){
         await User.create({
           email: data.email,

@@ -59,7 +59,6 @@ export default class ClientsController{
       eachMessage: async ({message}) => {
         if(message.value){
           const status_message = JSON.parse(message.value.toString())
-          console.log(status_message.is_Approved)
           UserStatus.create({
             user_id: user_logged.id,
             status_id: status_message.isApproved
@@ -76,16 +75,14 @@ export default class ClientsController{
       url: `http://localhost:3000/clients?email=${user.email}`,
       method: 'get'
     })
-    console.log(api.data)
-    if(api.status === 200){
-      for(let x=0;x<api.data.length;x++){
-        if(api.data[x].status === true){
 
+    if(api.status === 200){
+      for(let x=0;x<api.data.Client.length;x++){
+        if(api.data.Client[x].status === true){
           status.status_id = 1
           await status.save()
-          return response.status(200).json({client: api.data[x]})
+          return response.status(200).json({client: api.data.Client[x]})
         }else{
-
           status.status_id = 2
           await status.save()
           return response.status(400).json({message: 'You can not become a client of our bank!'})
@@ -118,7 +115,6 @@ export default class ClientsController{
     const logged = await UserStatus.findByOrFail('user_id', auth.user?.id)
     const data = await request.only(['value', 'client_to'])
 
-
     if(logged.status_id === 1){
 
       const user_logged = await User.findOrFail(auth.user?.id)
@@ -143,9 +139,11 @@ export default class ClientsController{
               }else{
                 return response.status(400).json({Error: `The user whos you're trying to send the pix isn't a client`})
               }
+            }else{
+              return response.status(400).json({Error: 'Strange error!'})
             }
           }else{
-            return response.status(400).json({Error: `You can not send a email to yourself`})
+            return response.status(400).json({Error: `You can not send a pix to yourself`})
           }
         }else{
           return response.status(400).json({Error: `The user whos you're trying to send the pix does not exists`})
@@ -153,6 +151,8 @@ export default class ClientsController{
       }else{
         return response.status(400).json({Error: 'You have to be logged to sent the pix'})
       }
+    }else{
+      return response.status(400).json({Error: `You're not a client! Can not send a pix!`})
     }
   }
 }
