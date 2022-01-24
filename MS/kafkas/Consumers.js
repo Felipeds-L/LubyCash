@@ -3,6 +3,7 @@ const { Kafka } = require("kafkajs")
 const Client = require('../models/Client')
 const Client_Account = require('../models/Client_Account')
 const Producer = require('./Producers')
+const nodemailer = require('nodemailer')
 
 class Consumers{
   constructor(){
@@ -56,10 +57,31 @@ class Consumers{
                 is_Approved: true, 
                 client: client
               })
-            }else{producer.produce('status-client', {
-              is_Approved: false
-            })
 
+              sendEmail(client_data.email, true)
+
+              
+            }else{
+              const producer = new Producer()
+
+              const client_dennied = await Client.create({
+                full_name: client_data.full_name,
+                email: client_data.email,
+                phone: client_data.phone,
+                cpf_number: client_data.cpf_number,
+                address: client_data.address,
+                city: client_data.city,
+                state: client_data.state,
+                zipcode: client_data.zipcode,
+                average_salary: client_data.average_salary,
+                status: 0
+              });
+              producer.produce('status-client', {
+                is_Approved: false,
+                user_dennied: client_dennied
+              })
+
+              sendEmail(client_data.email, false)
             }
           }
         }
@@ -68,4 +90,60 @@ class Consumers{
   }
 }
 
+function sendEmail(email, status){
+  const transport = nodemailer.createTransport({
+    host: "smtp.mailtrap.io",
+    port: 2525,
+    auth: {
+      user: "9665e746ab93cf",
+      pass: "6acd26e0dc004d"
+    }
+  });
+  
+  if(status === true){
+    const message = {
+      from: "noreply@milk.com",
+      to: email,
+      subject: "Status - solicitação de cliente",
+      text: `Prezado(a) ${email}. \n\n. Voce foi aprovado em nosso banco!`,
+      html: `<p>Prezado(a) ${email}. \n\n. Voce foi aprovado em nosso banco!</p>`
+    };
+
+    transport.sendMail(message, function(err) {
+      if(err){
+        return {
+          erro: true,
+          message: "Email can't bee sent"
+        }
+      }
+    })
+    return {
+      error: false,
+      message: 'Email sent correctly'
+    }
+  }else{
+
+    const message = {
+      from: "noreply@milk.com",
+      to: email,
+      subject: "Status - solicitação de cliente",
+      text: `Prezado(a) ${email}. \n\n. Voce foi não foi aprovado em nosso banco!`,
+      html: `<p>Prezado(a) ${email}. \n\n. Voce não foi aprovado em nosso banco!</p>`
+    };
+
+    transport.sendMail(message, function(err) {
+      if(err){
+        return {
+          erro: true,
+          message: "Email can't bee sent"
+        }
+      }
+    })
+    return {
+      error: false,
+      message: 'Email sent correctly'
+    }
+  }
+    
+}
 module.exports = Consumers

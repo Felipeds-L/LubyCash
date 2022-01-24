@@ -143,4 +143,25 @@ export default class AdminsController {
     }
   }
 
+
+  public async extract({ auth, request, response}: HttpContextContract){
+    const user_level = await UserLevelAccess.findByOrFail('user_id', auth.user?.id)
+    if(user_level.level_id === 2){
+      const {client, date_from, date_to} = request.qs()
+      // const api = await axios.get(`http://localhost:3000/clients/pix`)
+      const api = await axios({
+        url: `http://localhost:3000/clients/extract?client=?${client}`,
+        method: 'get',
+        data: {
+          client: client,
+          date_from: date_from,
+          date_to: date_to
+        }
+      })
+
+      return response.status(200).json({Message: api.data})
+    }else{
+      return response.status(400).json({Error: 'Only Administrators can see all the clients!'})
+    }
+  }
 }

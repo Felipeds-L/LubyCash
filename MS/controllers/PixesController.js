@@ -1,10 +1,13 @@
 /* eslint-disable camelcase */
+const { Op } = require('sequelize');
 const ClientAccount = require('../models/Client_Account');
-const Pix = require('../models/Pix')
+const Pix = require('../models/Pix');
 
 module.exports = {
   async store(req, res){
     const { client_from, client_to, value} = req.body
+
+    console.log(client_to)
     const account_from = await ClientAccount.findOne({where: { client_cpf: client_from}})
     const account_to = await ClientAccount.findOne({where: {client_cpf: client_to}})
 
@@ -29,5 +32,37 @@ module.exports = {
       
       return res.json({Transfered: true, Transaction: transaction})
     }
+  },
+
+  async extract(req, res){
+    // const {client, date_from, date_to} = req.body;
+    const { client, date_from, date_to }= req.body
+
+    if(client === null){
+      return res.json({Message: 'specify a client!'})
+    }
+    console.log(date_from)
+    if(date_from === 'undefined' && date_to === 'undefined'){
+      console.log('hello there')
+      const pixes = await Pix.findAll({
+      where:{
+        [Op.or]: [{cpf_origin: client}, [{cpf_destination: client}]]
+      }
+    })
+      return res.json({Extrato: pixes})
+    }
+
+    const init_day = new Date(date_from)
+    const ended_day = new Date(date_to)
+    ended_day.setDate(ended_day.getDate()+1)
+    const pixes = await Pix.findAll({
+      where:{
+        createdAt: { [Op.between]: [init_day, ended_day] },
+        [Op.or]: [{cpf_origin: client}, [{cpf_destination: client}]]
+      }
+    })
+
+    console.log(pixes)
+    return res.json(pixes)
   }
 }

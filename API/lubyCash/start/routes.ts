@@ -20,17 +20,20 @@
 
 import Route from '@ioc:Adonis/Core/Route'
 
-Route.get('/', async () => {
-  return { hello: 'world' }
-})
+
 Route.group(() => {
   Route.post('/admin', 'AdminsController.store')
-  Route.get('/clients/:status', 'AdminsController.showClients')
+  Route.get('/admin/clients', 'ClientsController.indexStatus')
   Route.post('/clients/pix', 'ClientsController.madePix')
   Route.post('/clients/account', 'UsersController.InAccount')
-  Route.resource('/clients', 'ClientsController')
+  Route.post('/clients', 'ClientsController.store')
+  Route.get('/admin/extrato', 'AdminsController.extract')
+
+
 }).middleware('auth')
 
+
+Route.get('/clients', 'ClientsController.index')
 Route.resource('/user', 'UsersController')
 Route.post('/login', 'AuthController.login')
 Route.post('/forgot-password','AuthController.forgotPassword')

@@ -1,14 +1,22 @@
 /* eslint-disable camelcase */
 const Client = require('../models/Client');
+
 // const { Op } = require('sequelize');
 module.exports = {
   async index(req, res) {
-    const { status, date } = req.query;
+    const { email} = req.query;
+  
+    const clients = await Client.findAll({
+      where: {
+        email: email
+      }
+    });
+    return res.json(clients);
+  },
 
-    if (status === 0) {
-      const clients = await Client.findAll();
-      return res.json(clients);
-    }
+  async status(req, res){
+    const { status, date } = req.query;
+      
     if (date === 0) {
       const clients = await Client.findAll({ where: { status } });
       return res.json(clients);
@@ -20,8 +28,16 @@ module.exports = {
       where: {
         status: status
       }
-      // where: { status, created_at: { [Op.between]: [statusDate, next_day] } },
     });
     return res.json(clients);
   },
+
+
+  async all_clients(req, res){
+    const clients = await Client.findAll({
+      attributes: ['full_name']
+    })
+
+    return res.json({Clients: clients})
+  }
 };

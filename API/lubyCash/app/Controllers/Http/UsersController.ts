@@ -64,7 +64,7 @@ export default class UsersController {
 
     try{
       const data = await request.only(
-        ['full_name', 'password', 'email', 'phone', 'cpf_number', 'address', 'city', 'state', 'zipcode', 'average_salary', 'level_access']
+        ['password', 'email',  'cpf_number', 'level_access']
       );
       try{
 
@@ -74,93 +74,18 @@ export default class UsersController {
           password: data.password
         })
 
-        const message = {
-          user: {
-            full_name: data.full_name,
-            email: data.email,
-            phone: data.phone,
-            cpf_number: data.cpf_number,
-            address: data.address,
-            city: data.city,
-            state: data.state,
-            zipcode: data.zipcode,
-            average_salary: data.average_salary,
-          }
-        }
-
         const user = await User.findByOrFail('email', data.email)
-
-        // this if check the datas and aprove or deni the user
-        if(data.average_salary >= 500){
-          console.log('entrou')
-          // insert a user status as aproved = 1
-          await UserStatus.create({
-            user_id: user.id
-          })
-
-          const message_status = {
-            status:{
-              user_email: data.email,
-              username: data.full_name,
-              status_code: 1
-            }
-          }
-
-          await producer_status.send({
-            topic: 'status',
-            messages: [
-              { value: JSON.stringify(message_status)}
-            ]
-          })
-          await producer_status.disconnect()
-
-          // give the user a level access, default as client
-          await UserLevelAccess.create({
-            level_id: data.level_access,
-            user_id: user.id
-          })
+        await UserStatus.create({
+          user_id: user.id
+        })
 
 
-
-          // send the client's data from the consumer on MS
-          await producer_client.send({
-            topic: 'user',
-            messages: [
-              { value: JSON.stringify(message) },
-            ],
-          })
-
-          await producer_client.disconnect()
-
-        }else{
-          // give the user a level 2 of status, that's mean denied
-          await UserStatus.create({
-            user_id: user.id,
-            status_id: 2
-          })
-
-          await UserLevelAccess.create({
-            level_id: data.level_access,
-            user_id: user.id
-          })
-
-          const message_status = {
-            status:{
-              user_email: data.email,
-              username: data.full_name,
-              status_code: 0
-            }
-          }
-
-          await producer_status.send({
-            topic: 'status',
-            messages: [
-              { value: JSON.stringify(message_status)}
-            ]
-          })
-        }
-
+        await UserLevelAccess.create({
+          level_id: data.level_access,
+          user_id: user.id
+        })
         return response.status(200).json({Created: true})
+
       }catch{
         return response.status(400).json({Message: 'Error on create the user, please try it again later!'})
       }

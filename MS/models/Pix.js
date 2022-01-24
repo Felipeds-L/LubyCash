@@ -3,7 +3,7 @@ const {DataTypes, Sequelize} = require('sequelize')
 
 const db = new Sequelize('mysql://root:@localhost:3306/ms_lubycash')
 
-const Pix = db.define('pix', {
+const Pix = db.define('pixes', {
   id:{
     type: DataTypes.INTEGER,
     autoIncrement: true,
