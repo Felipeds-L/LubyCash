@@ -2,6 +2,7 @@ import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import User from 'App/Models/User'
 import LevelAccess from 'App/Models/LevelAccess'
 import UserLevelAccess from 'App/Models/UserLevelAccess'
+import UserStatus from 'App/Models/UserStatus';
 
 const nodemailer = require("nodemailer");
 
@@ -12,10 +13,15 @@ export default class AuthController {
       const password = request.input('password')
 
       const user = await User.findByOrFail('email', email)
+      const status = await UserStatus.findByOrFail('user_id', user.id)
       const level = await LevelAccess.query().select('level').whereIn('id', UserLevelAccess.query().select('level_id').where('user_id', user.id))
+      if(status.status_id === 1){
+        const token = await auth.use('api').attempt(email, password)
+        return response.status(200).json({token: token, user: user.email, level_access: level})
+      }else{
+        return response.status(200).json({Error: 'Can not log in! You have not been approved by our bank!'})
+      }
 
-      const token = await auth.use('api').attempt(email, password)
-      return response.status(200).json({token: token, user: user.email, level_access: level})
     }catch{
       return response.status(401).json({Error: 'Invalid credential'})
     }
